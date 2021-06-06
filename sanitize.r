@@ -4,7 +4,7 @@ library(data.table, quietly = TRUE)
 library(ggplot2)
 #conversion to percent for printing
 library(scales)
-# library for latex tables
+#library for latex tables
 library(xtable)
 
 readFiles = function(directory)
@@ -24,14 +24,17 @@ readFiles = function(directory)
     # Extract the actual price value by dates values from the sheet
     newSheet = sheet[lineIndex+2:nrow(sheet) - 1,] # TO DO is this really propre en fait ?
     # Put the empty values in unused columns to 
-    newSheet[newSheet == ""] <--NA
+    # print(colnames(newSheet))
+    # newSheet[newSheet == ""] <--NA
     # Filter the data where its NA
     newSheet<- na.omit(Filter(function(x)!all(is.na(x)), newSheet))
   
     #Getting the new colum names
     columns = as.vector(as.matrix(sheet[lineIndex,]))
     columns <- Filter(function(x)x!="", columns)
-    setnames(newSheet, names(newSheet), columns)
+    newSheet = newSheet[,1:8]
+    newNames = 
+    setnames(newSheet, names(newSheet), columns[1:8])
     table[[dealNumber]] = newSheet
   }
   return (table)
@@ -50,13 +53,3 @@ readFtunus = function(path)
   ftunusChange = na.omit(Filter(function(x)!all(is.na(x)), ftunusChange))
   return (ftunusChange)
 }
-
-
-# gg = ggplot(data=AARTable, aes(x = day, y = AAR)) +
-#  geom_vline(xintercept=0, colour="firebrick", size=1) +
-#  geom_point(color="blue", size=2.5) +
-#  geom_path(color="blue", size=1) +
-#  xlim(-5, 5) +
-#  ylim(-0.4, 0.4)
-# 
-# print(gg)
