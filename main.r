@@ -13,15 +13,12 @@ dealsTable[, Rank.Value.inc..Net.Debt.of.Target..USD..Millions. := NULL]
 # Filtering the deals
 usaDeals = dealsTable[Acquiror.Mid.Industry == "REITs"][Acquiror.Nation.of.Primary.Stock.Exchange == "United States"][as.Date(Date.Announced) > as.Date("2003-01-01")]
 
-# usaDeals[]
-
 # Reading files
 ftunusData = readFtunus('./data/Price History_FTUNUS.csv')
 targets = readFiles("./data/Targets/")
 acquirers = readFiles("./data/Acquirers/")
 
 # Generating the analysis
-
 #By 
 usaDealsAnalysis = getAnalysis(usaDeals, ftunusData, acquirers, targets)
 #usaDealsAnalysis = getAnalysis(usaDeals[1:3,], ftunusData, acquirers, targets)
@@ -43,5 +40,18 @@ quartileAnalysis = data.table(Quartile=c("25%","50%", "75%", "100%"),
 quartileAnalysis[,("Adjusted") := CAPM_CAAR - sum(usaDealsAnalysis[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR])]
 print(quartileAnalysis)
 
-# printAnalysis(usa_acq_analysis, 'usa_acquirers')
+printAnalysis(usaDealsAnalysis, "./output/usa_deals")
+printAnalysis(Q1, './output/Q1')
+printAnalysis(Q2, './output/Q2')
+printAnalysis(Q3, './output/Q3')
+printAnalysis(Q4, './output/Q4')
+  print(xtable(
+    quartileAnalysis,
+    caption = "CAPM CAAR for the 4 tragets's quartile by valuation",
+    type = "latex"),
+    table.placement = "H",
+    caption.placement = "top",
+    include.rownames = FALSE,
+    floating = TRUE, latex.environments = "center",
+    file = "output/target_quartiles.tex")
 # printAnalysis(usa_tagets_analysis, './output/USA_targets')

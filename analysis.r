@@ -3,12 +3,12 @@ source('utils.r')
 getAverageTable = function(companies)
 {
   t = data.table(day = -100:10)
-  t[, ZEROR := sapply(day, getDayAAR, companies, "chg")]
-  t[, ZEROR_C := cumsum(ZEROR)]
-  t[, SMR_AAR := sapply(day, getDayAAR, companies, "SMR_AR")]
-  t[, SMR_CAAR := cumsum(SMR_AAR)]
-  t[, CAPM_AAR := sapply(day, getDayAAR, companies, "CAPM_AR")]
-  t[, CAPM_CAAR := cumsum(CAPM_AAR)]
+  t[, "Z_return" := sapply(day, getDayAAR, companies, "chg")]
+  t[, "CZ_return" := cumsum(Z_return)]
+  t[, "SMR_AAR" := sapply(day, getDayAAR, companies, "SMR_AR")]
+  t[, "SMR_CAAR" := cumsum(SMR_AAR)]
+  t[, "CAPM_AAR" := sapply(day, getDayAAR, companies, "CAPM_AR")]
+  t[, "CAPM_CAAR" := cumsum(CAPM_AAR)]
   return (t)
 }
 
@@ -41,6 +41,7 @@ getSingleCAARTestTable = function(data, field, cfield)
   
   computeField = function(name, tname)
   {
+    test_table[,(name) := paste0(round(test_table[[name]] * 100, 4), "%")]
     test_table[,(tname) := round(abs(data[[name]]/sd(data[[name]])), 4)]
     test_table[,mask := (1 - pt(test_table[[tname]], length(test_table[[tname]]))) < 0.05]
     stars = factor(test_table$mask, labels=c("", "*"))
@@ -57,7 +58,7 @@ getSingleCAARTestTable = function(data, field, cfield)
 getCAARTestTables = function(data, fields)
 {
   tables = list()
-  tables[["ZERO"]] = getSingleCAARTestTable(data, "ZEROR", "ZEROR_C")
+  tables[["ZERO"]] = getSingleCAARTestTable(data, "Z_return", "CZ_return")
   tables[["SMR"]] = getSingleCAARTestTable(data, "SMR_AAR", "SMR_CAAR")
   tables[["CAPM"]] = getSingleCAARTestTable(data, "CAPM_AAR", "CAPM_CAAR")
   return (tables)
@@ -97,7 +98,7 @@ getSingleAnalysis = function(deals, ftunusChange, data)
   test = companies
   analysis = list()
   analysis[["average_table"]] = AARTable
-  analysis[["caar_tables"]] = getCAARTables(AARTable, c("ZEROR","SMR_AAR", "CAPM_AAR"))
+  analysis[["caar_tables"]] = getCAARTables(AARTable, c("Z_return","SMR_AAR", "CAPM_AAR"))
   analysis[["test_tables"]] = getCAARTestTables(AARTable) 
   return(analysis)
 }

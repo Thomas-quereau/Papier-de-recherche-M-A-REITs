@@ -1,7 +1,7 @@
 
 getSum = function(b, a, table, field)
 {
-  return(sum(table[between(day, a, b)][[field]]))
+  return(paste0(round(sum(table[between(day, a, b)][[field]]) * 100, 4), "%"))
 }
 
 getDayAAR = function(d, companies, field)
