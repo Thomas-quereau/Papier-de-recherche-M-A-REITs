@@ -1,4 +1,5 @@
 library(dplyr)
+library(ggplot2)
 # Clean the environment
 rm(list = ls(all = TRUE))
 
@@ -59,10 +60,11 @@ print(xtable(
 
 targetsData = usaDealsAnalysis[["targets"]][["average_table"]][day <= 10 & day >= -50, c("day", "CAPM_AAR")]
 targetsData[, "CAPM CAAR" := cumsum(CAPM_AAR)]
-runups = ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5) 
-print(runups)
+ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5)
+ggsave(filename = "./output/targets_runups.png", device="png", width = 19.2, height = 19.2, units = "cm")
+
 
 targetsData = usaDealsAnalysis[["acquirers"]][["average_table"]][day <= 10 & day >= -50, c("day", "CAPM_AAR")]
 targetsData[, "CAPM CAAR" := cumsum(CAPM_AAR)]
-runups = ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5) 
-print(runups)
+ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5) 
+ggsave(filename = "./output/acquirers_runups.png", device="png", width = 19.2, height = 19.2, units = "cm")
