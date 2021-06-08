@@ -39,16 +39,12 @@ getSingleCAARTestTable = function(data, field, cfield)
   test_table[, (field) := data[[field]]]
   test_table[, (cfield) := data[[cfield]]]
   
-  
   computeField = function(name, tname)
   {
     test_table[,(name) := paste0(round(test_table[[name]] * 100, 2), "%")]
     test_table[,(tname) := round(abs(data[[name]]/sd(data[[name]])), 2)]
-    test_table[,mask := (1 - pt(test_table[[tname]], length(test_table[[tname]])))]
-    
+    test_table[,mask := (1 - pt(test_table[[tname]], length(test_table[[tname]]))) < 0.05]
     stars = factor(test_table$mask, labels=c("", "*"))
-
-        
     test_table[,(tname) := paste0(as.character(test_table[[tname]]), as.character(stars))]
     test_table[, mask := NULL]
   }
