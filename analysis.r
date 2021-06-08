@@ -2,12 +2,12 @@ source('utils.r')
 
 getAverageTable = function(companies)
 {
-  t = data.table(day = -100:10)
-  t[, "Z_return" := sapply(day, getDayAAR, companies, "chg")]
+  t = data.table(Day = -100:10)
+  t[, "Z_return" := sapply(Day, getDayAAR, companies, "chg")]
   t[, "CZ_return" := cumsum(Z_return)]
-  t[, "SMR_AAR" := sapply(day, getDayAAR, companies, "SMR_AR")]
+  t[, "SMR_AAR" := sapply(Day, getDayAAR, companies, "SMR_AR")]
   t[, "SMR_CAAR" := cumsum(SMR_AAR)]
-  t[, "CAPM_AAR" := sapply(day, getDayAAR, companies, "CAPM_AR")]
+  t[, "CAPM_AAR" := sapply(Day, getDayAAR, companies, "CAPM_AR")]
   t[, "CAPM_CAAR" := cumsum(CAPM_AAR)]
   return (t)
 }
@@ -35,23 +35,27 @@ getSingleCAARTestTable = function(data, field, cfield)
   test_table = data.table()
   testField = paste0("t-", field)
   ctestField = paste0("t-", cfield)
-  test_table[, day := data[, day]]
+  test_table[, Day := data[, Day]]
   test_table[, (field) := data[[field]]]
   test_table[, (cfield) := data[[cfield]]]
   
+  
   computeField = function(name, tname)
   {
-    test_table[,(name) := paste0(round(test_table[[name]] * 100, 4), "%")]
-    test_table[,(tname) := round(abs(data[[name]]/sd(data[[name]])), 4)]
-    test_table[,mask := (1 - pt(test_table[[tname]], length(test_table[[tname]]))) < 0.05]
+    test_table[,(name) := paste0(round(test_table[[name]] * 100, 2), "%")]
+    test_table[,(tname) := round(abs(data[[name]]/sd(data[[name]])), 2)]
+    test_table[,mask := (1 - pt(test_table[[tname]], length(test_table[[tname]])))]
+    
     stars = factor(test_table$mask, labels=c("", "*"))
+
+        
     test_table[,(tname) := paste0(as.character(test_table[[tname]]), as.character(stars))]
     test_table[, mask := NULL]
   }
   
   computeField(field, testField)
   computeField(cfield, ctestField)
-  test_table = test_table[day <= 10 & day >= -10,]
+  test_table = test_table[Day <= 10 & Day >= -10,]
   return(test_table)
 }
 
@@ -76,7 +80,7 @@ getSingleAnalysis = function(deals, ftunusChange, data)
     if(deal %in% names(data) == FALSE) next
     announce = as.Date(deals[M.A.SDC.Deal.Number == deal, Date.Announced])
     company = data.table(data[[deal]])
-    company[, day := ( as.integer(difftime(as.Date(company$`Exchange Date`), announce, unit = "days")) )]
+    company[, Day := ( as.integer(difftime(as.Date(company$`Exchange Date`), announce, unit = "days")) )]
     company[, "Exchange Date" := as.Date(company$`Exchange Date`)]
     setnames(company, '%Chg', "chg")
     
@@ -85,7 +89,7 @@ getSingleAnalysis = function(deals, ftunusChange, data)
     company[, ftunus_chg := as.numeric(gsub(",", ".", ftunus_chg))]
     company[, SMR_AR := chg - ftunus_chg]
     
-    reg = lm(chg ~ ftunus_chg, company[between(day, -130, -30)])
+    reg = lm(chg ~ ftunus_chg, company[between(Day, -130, -30)])
     a = reg$coef[("Intercept")]
     b = reg$coef["ftunus_chg"]
     company[, CAPM_AR := chg - b * ftunus_chg]

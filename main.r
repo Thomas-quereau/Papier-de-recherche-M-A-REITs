@@ -33,14 +33,14 @@ Q4 = getAnalysis(usaTargetsDeals[quartile == 4,], ftunusData, acquirers, targets
 quartileAnalysis = data.table(Quartile=c("25%","50%", "75%", "100%"),
                               "Rank value (millions)"= quantile(usaTargetsDeals$valuation)[2:5],
                               "CAPM CAAR" = c(
-                                sum(Q1[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR]),
-                                sum(Q2[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR]),
-                                sum(Q3[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR]),
-                                sum(Q4[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR])
+                                sum(Q1[["targets"]][["average_table"]][Day >= -5 & Day <= 5, CAPM_AAR]),
+                                sum(Q2[["targets"]][["average_table"]][Day >= -5 & Day <= 5, CAPM_AAR]),
+                                sum(Q3[["targets"]][["average_table"]][Day >= -5 & Day <= 5, CAPM_AAR]),
+                                sum(Q4[["targets"]][["average_table"]][Day >= -5 & Day <= 5, CAPM_AAR])
                             ))
-quartileAnalysis[,("Adjusted") := quartileAnalysis[["CAPM CAAR"]] - sum(usaDealsAnalysis[["targets"]][["average_table"]][day >= -5 & day <= 5, CAPM_AAR])]
-quartileAnalysis[,"CAPM CAAR" := paste0(round(quartileAnalysis[["CAPM CAAR"]] * 100,4), "%")]
-quartileAnalysis[,"Adjusted" := paste0(round(quartileAnalysis[["Adjusted"]] * 100,4), "%")]
+quartileAnalysis[,("Adjusted") := quartileAnalysis[["CAPM CAAR"]] - sum(usaDealsAnalysis[["targets"]][["average_table"]][Day >= -5 & Day <= 5, CAPM_AAR])]
+quartileAnalysis[,"CAPM CAAR" := paste0(round(quartileAnalysis[["CAPM CAAR"]] * 100,2), "%")]
+quartileAnalysis[,"Adjusted" := paste0(round(quartileAnalysis[["Adjusted"]] * 100,2), "%")]
 print(quartileAnalysis)
 
 printAnalysis(usaDealsAnalysis, "./output/usa_deals")
@@ -58,13 +58,32 @@ print(xtable(
   floating = TRUE, latex.environments = "center",
   file = "output/target_quartiles.tex")
 
-targetsData = usaDealsAnalysis[["targets"]][["average_table"]][day <= 10 & day >= -50, c("day", "CAPM_AAR")]
+targetsData = usaDealsAnalysis[["targets"]][["average_table"]][Day <= 10 & Day >= -50, c("Day", "CAPM_AAR")]
 targetsData[, "CAPM CAAR" := cumsum(CAPM_AAR)]
-ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5)
+ggplot(data = targetsData, aes(x=Day, y=`CAPM CAAR`)) + geom_col(size=1.5)
 ggsave(filename = "./output/targets_runups.png", device="png", width = 19.2, height = 19.2, units = "cm")
 
 
-targetsData = usaDealsAnalysis[["acquirers"]][["average_table"]][day <= 10 & day >= -50, c("day", "CAPM_AAR")]
+targetsData = usaDealsAnalysis[["acquirers"]][["average_table"]][Day <= 10 & Day >= -50, c("Day", "CAPM_AAR")]
 targetsData[, "CAPM CAAR" := cumsum(CAPM_AAR)]
-ggplot(data = targetsData, aes(x=day, y=`CAPM CAAR`)) + geom_col(size=1.5) 
+ggplot(data = targetsData, aes(x=Day, y=`CAPM CAAR`)) + geom_col(size=1.5) 
 ggsave(filename = "./output/acquirers_runups.png", device="png", width = 19.2, height = 19.2, units = "cm")
+
+commercial = getAnalysis(usaDeals[M.A.TRBC.Activity...... == "Commercial REITs (NEC)"], ftunusData, acquirers, targets)
+printAnalysis(commercial, './output/commerical')
+noncommercial = getAnalysis(usaDeals[M.A.TRBC.Activity...... != "Commercial REITs (NEC)"], ftunusData, acquirers, targets)
+printAnalysis(noncommercial, './output/noncommerical')
+
+
+print(xtable(
+  usaDeals[, c("Date.Announced", "Acquiror.Full.Name", "Target.Full.Name", "M.A.TRBC.Activity......", "valuation"), with=FALSE],
+  caption = "Screened companies",
+  type = "latex"),
+  table.placement = "H",
+  caption.placement = "top",
+  include.rownames = FALSE,
+  floating = TRUE, latex.environments = "center",
+  file = "output/screened_companies.tex")
+
+
+
